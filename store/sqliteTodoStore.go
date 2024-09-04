@@ -100,6 +100,21 @@ func (s *SqliteTodoStore) GetById(id int64) (Todo, error) {
 	return todo, nil
 }
 
+func (s *SqliteTodoStore) Complete(id int64) error {
+	query := "UPDATE todo SET done=true WHERE id=?;"
+	_, err := s.db.Exec(query, id)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (s *SqliteTodoStore) Delete(id int64) error {
+	query := `DELETE FROM todo WHERE id=?;`
+	_, err := s.db.Exec(query, id)
+	return err
+}
+
 func (s *SqliteTodoStore) Seed() error {
 	slog.Info("Seeding db...")
 

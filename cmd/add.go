@@ -5,7 +5,7 @@ package cmd
 
 import (
 	"fmt"
-	"os"
+	"time"
 
 	"github.com/TilliboyF/tuido/common"
 	"github.com/TilliboyF/tuido/store"
@@ -18,28 +18,11 @@ var addCmd = &cobra.Command{
 	Short:                 "adding a new todo",
 	Long:                  `adding a new todo`,
 	DisableFlagsInUseLine: true,
-	// Args: func(cmd *cobra.Command, args []string) error {
-	// 	if len(args) < 1 {
-	// 		return fmt.Errorf("requires a name argument")
-	// 	}
-	// 	return nil
-	// },
-	PreRunE: func(cmd *cobra.Command, args []string) error {
-		if len(args) == 0 {
-			cmd.Help()
-			os.Exit(0)
-		}
-		return nil
-	},
-	RunE: addTodo,
+	PreRunE:               common.ArgsCheckFunc(1),
+	RunE:                  addTodo,
 }
 
 func addTodo(cmd *cobra.Command, args []string) error {
-	// fmt.Println("add called")
-	// test, _ := cmd.Flags().GetString("todo")
-	// fmt.Println("flag: ", test)
-	// fmt.Println("args: ", args)
-
 	data, err := store.NewSqliteTodoStore(common.DB_LOCATION)
 	if err != nil {
 		return err
@@ -55,12 +38,12 @@ func addTodo(cmd *cobra.Command, args []string) error {
 	if err != nil {
 		return err
 	}
-	fmt.Println("New todo: ", todo)
+	todo.CreatedAt = time.Now()
+	common.PrintTodo(todo)
 
 	return nil
 }
 
 func init() {
 	rootCmd.AddCommand(addCmd)
-	// addCmd.Flags().String("todo", "", "wvwvwrv")
 }
