@@ -1,8 +1,11 @@
-package store
+package db
 
 import (
 	"os"
 	"testing"
+
+	"github.com/TilliboyF/tuido/types"
+	_ "github.com/mattn/go-sqlite3"
 )
 
 const (
@@ -24,15 +27,16 @@ func TestNewSqliteTodoStore(t *testing.T) {
 
 func TestSqliteStoreAdd(t *testing.T) {
 	db, _ := NewSqliteTodoStore(testDB)
-	updatedTodo, err := db.Add(Todo{
+	todo := types.Todo{
 		ID:   -1,
 		Name: "test",
-	})
+	}
+	err := db.Add(&todo)
 	if err != nil {
 		t.Log("Error adding todo: ", err)
 		t.Fail()
 	}
-	if updatedTodo.ID == -1 {
+	if todo.ID == -1 {
 		t.Log("Id didn't get updated")
 		t.Fail()
 	}

@@ -8,7 +8,7 @@ import (
 	"github.com/rodaine/table"
 	"github.com/spf13/cobra"
 
-	"github.com/TilliboyF/tuido/store"
+	"github.com/TilliboyF/tuido/types"
 )
 
 const (
@@ -17,7 +17,7 @@ const (
 	Checked     = "☑"
 )
 
-func PrintTodos(todos []store.Todo) {
+func PrintTodos(todos []types.Todo) {
 	headerFmt := color.New(color.FgCyan, color.Underline).SprintfFunc()
 	columnFmt := color.New(color.FgYellow).SprintfFunc()
 
@@ -32,7 +32,7 @@ func PrintTodos(todos []store.Todo) {
 
 }
 
-func PrintTodo(todo store.Todo) {
+func PrintTodo(todo types.Todo) {
 	headerFmt := color.New(color.FgCyan, color.Underline).SprintfFunc()
 	columnFmt := color.New(color.FgYellow).SprintfFunc()
 

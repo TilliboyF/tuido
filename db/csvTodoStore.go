@@ -1,9 +1,11 @@
-package store
+package db
 
 import (
 	"encoding/csv"
 	"errors"
 	"os"
+
+	"github.com/TilliboyF/tuido/types"
 )
 
 type CsvTodoStore struct {
@@ -43,7 +45,7 @@ func (s *CsvTodoStore) determineNewIndex() (int64, error) {
 	return lasttodo.ID + 1, nil
 }
 
-func (s *CsvTodoStore) GetAll() ([]Todo, error) {
+func (s *CsvTodoStore) GetAll() ([]types.Todo, error) {
 	s.file.Seek(0, 0)
 	reader := csv.NewReader(s.file)
 	records, err := reader.ReadAll()
@@ -51,9 +53,9 @@ func (s *CsvTodoStore) GetAll() ([]Todo, error) {
 		return nil, err
 	}
 
-	result := []Todo{}
+	result := []types.Todo{}
 	for _, row := range records {
-		todo, err := NewTodoFromFields(row)
+		todo, err := types.NewTodoFromFields(row)
 		if err != nil {
 			return nil, err
 		}
@@ -62,11 +64,11 @@ func (s *CsvTodoStore) GetAll() ([]Todo, error) {
 	return result, nil
 }
 
-func (s *CsvTodoStore) Add(todo Todo) (Todo, error) {
+func (s *CsvTodoStore) Add(todo types.Todo) (types.Todo, error) {
 
 	newIndex, err := s.determineNewIndex()
 	if err != nil {
-		return Todo{}, err
+		return types.Todo{}, err
 	}
 	todo.ID = newIndex
 

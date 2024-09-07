@@ -1,11 +1,10 @@
-package store
+package types
 
 import (
 	"fmt"
 	"strconv"
 	"time"
 
-	_ "github.com/mattn/go-sqlite3"
 	"github.com/mergestat/timediff"
 )
 
@@ -47,12 +46,4 @@ func (t *Todo) CsvString() []string {
 		done = "0"
 	}
 	return []string{fmt.Sprint(t.ID), t.Name, done}
-}
-
-type TodoStore interface {
-	Add(Todo) (Todo, error)
-	Update(Todo) (Todo, error)
-	GetById(int64) (Todo, error)
-	GetAll() ([]Todo, error)
-	Delete(Todo) error
 }

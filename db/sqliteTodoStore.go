@@ -1,4 +1,4 @@
-package store
+package db
 
 import (
 	"database/sql"
@@ -7,6 +7,7 @@ import (
 	"log"
 	"log/slog"
 
+	"github.com/TilliboyF/tuido/types"
 	_ "github.com/mattn/go-sqlite3"
 )
 
@@ -23,7 +24,7 @@ func NewSqliteTodoStore(connectString string) (*SqliteTodoStore, error) {
 		db: db,
 	}
 	// check if seeding is needed
-	_, err = db.Query("SELECT * FROM todo")
+	_, err = db.Query(`SELECT * FROM todo`)
 	if err != nil {
 		if err := data.Seed(); err != nil {
 			log.Println(err)
@@ -33,43 +34,42 @@ func NewSqliteTodoStore(connectString string) (*SqliteTodoStore, error) {
 
 }
 
-func (s *SqliteTodoStore) Add(t Todo) (Todo, error) {
-
+func (s *SqliteTodoStore) Add(t *types.Todo) error {
 	query := `INSERT INTO todo (name) VALUES (?);`
 	stmt, err := s.db.Prepare(query)
-	defer stmt.Close()
 	if err != nil {
-		return Todo{}, err
+		return err
 	}
+	defer stmt.Close()
 	result, err := stmt.Exec(t.Name)
 	if err != nil {
-		return Todo{}, err
+		return err
 	}
 	insertedID, err := result.LastInsertId()
 	if err != nil {
-		return Todo{}, err
+		return err
 	}
 	t.ID = insertedID
-	return t, nil
+	return nil
 }
 
-func (s *SqliteTodoStore) GetAll() ([]Todo, error) {
+func (s *SqliteTodoStore) GetAll() ([]types.Todo, error) {
 	query := `Select * from todo;`
 	stmt, err := s.db.Prepare(query)
-	defer stmt.Close()
 	if err != nil {
 		return nil, err
 	}
+	defer stmt.Close()
 	rows, err := stmt.Query()
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
 
-	var todos []Todo
+	var todos []types.Todo
 
 	for rows.Next() {
-		var todo Todo
+		var todo types.Todo
 		if err := rows.Scan(&todo.ID, &todo.Name, &todo.Done, &todo.CreatedAt); err != nil {
 			return nil, err
 		}
@@ -79,22 +79,21 @@ func (s *SqliteTodoStore) GetAll() ([]Todo, error) {
 	return todos, nil
 }
 
-func (s *SqliteTodoStore) GetById(id int64) (Todo, error) {
+func (s *SqliteTodoStore) GetById(id int64) (types.Todo, error) {
 	query := `Select * FROM todo WHERE id=?`
 	stmt, err := s.db.Prepare(query)
-	defer stmt.Close()
 	if err != nil {
-		return Todo{}, err
+		return types.Todo{}, err
 	}
-
-	var todo Todo
+	defer stmt.Close()
+	var todo types.Todo
 
 	row := stmt.QueryRow(id)
 	if err := row.Scan(&todo.ID, &todo.Name, &todo.Done, &todo.CreatedAt); err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
-			return Todo{}, fmt.Errorf("No todo found with id=%d", id)
+			return types.Todo{}, fmt.Errorf("no todo found with id=%d", id)
 		}
-		return Todo{}, err
+		return types.Todo{}, err
 	}
 
 	return todo, nil

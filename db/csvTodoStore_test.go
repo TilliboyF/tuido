@@ -1,8 +1,10 @@
-package store
+package db
 
 import (
 	"os"
 	"testing"
+
+	"github.com/TilliboyF/tuido/types"
 )
 
 const (
@@ -26,7 +28,7 @@ func cleanup() {
 
 func TestCsvStoreAdd(t *testing.T) {
 	store, _ := NewCsvTodoStore(TestFileName)
-	todo := Todo{
+	todo := types.Todo{
 		ID:   -1,
 		Name: "jkwdbwjkvbwv",
 		Done: false,
@@ -46,7 +48,7 @@ func TestCsvStoreAdd(t *testing.T) {
 }
 func TestCsvStoreGetAll(t *testing.T) {
 	store, _ := NewCsvTodoStore(TestFileName)
-	todo := Todo{
+	todo := types.Todo{
 		ID:   -1,
 		Name: "Test description",
 		Done: false,
