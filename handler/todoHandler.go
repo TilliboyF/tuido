@@ -15,8 +15,8 @@ type TodoHandler struct {
 	store *db.SqliteTodoStore
 }
 
-func NewTodoHandler(dbPath string) (*TodoHandler, error) {
-	if store, err := db.NewSqliteTodoStore(dbPath); err != nil {
+func NewTodoHandler(inMemoryDB bool) (*TodoHandler, error) {
+	if store, _, err := db.NewSqliteTodoStore(false, inMemoryDB); err != nil {
 		return nil, err
 	} else {
 		return &TodoHandler{

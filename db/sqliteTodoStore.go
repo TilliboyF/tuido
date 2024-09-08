@@ -7,6 +7,7 @@ import (
 	"os"
 	"path/filepath"
 
+	"github.com/DATA-DOG/go-sqlmock"
 	"github.com/TilliboyF/tuido/common"
 	"github.com/TilliboyF/tuido/types"
 	_ "github.com/mattn/go-sqlite3"
@@ -25,9 +26,16 @@ func getDBPath() (string, error) {
 	return dbPath, nil
 }
 
-func initializeDB(dbPath string) (*sql.DB, error) {
-	if dbPath == "" {
-		var err error
+func initializeDB(useInMemory bool) (*sql.DB, error) {
+
+	var dbPath string
+	var err error
+	var seedDb bool = false
+
+	if useInMemory {
+		dbPath = ":memory:"
+		seedDb = true
+	} else {
 		dbPath, err = getDBPath()
 		if err != nil {
 			return nil, err
@@ -39,6 +47,10 @@ func initializeDB(dbPath string) (*sql.DB, error) {
 		if err != nil {
 			return nil, err
 		}
+		seedDb = true
+	}
+
+	if seedDb {
 		db, err := sql.Open("sqlite3", dbPath)
 		if err != nil {
 			return nil, err
@@ -55,18 +67,32 @@ func initializeDB(dbPath string) (*sql.DB, error) {
 		}
 		return db, nil
 	}
+
 	return sql.Open("sqlite3", dbPath)
 }
 
-func NewSqliteTodoStore(dbPath string) (*SqliteTodoStore, error) {
-	db, err := initializeDB(dbPath)
-	if err != nil {
-		return nil, err
+func NewSqliteTodoStore(useMock bool, useInMemory bool) (*SqliteTodoStore, sqlmock.Sqlmock, error) {
+
+	var db *sql.DB
+	var mock sqlmock.Sqlmock
+	var err error
+
+	if useMock {
+		db, mock, err = sqlmock.New()
+		if err != nil {
+			return nil, nil, err
+		}
+	} else {
+		db, err = initializeDB(useInMemory)
+		if err != nil {
+			return nil, nil, err
+		}
 	}
+
 	data := SqliteTodoStore{
 		db: db,
 	}
-	return &data, nil
+	return &data, mock, nil
 }
 
 func (s *SqliteTodoStore) Add(t *types.Todo) error {
@@ -89,7 +115,7 @@ func (s *SqliteTodoStore) Add(t *types.Todo) error {
 }
 
 func (s *SqliteTodoStore) GetAll() ([]types.Todo, error) {
-	query := `Select * from todo;`
+	query := `SELECT * FROM todo;`
 	stmt, err := s.db.Prepare(query)
 	if err != nil {
 		return nil, err
@@ -115,7 +141,7 @@ func (s *SqliteTodoStore) GetAll() ([]types.Todo, error) {
 }
 
 func (s *SqliteTodoStore) GetById(id int64) (types.Todo, error) {
-	query := `Select * FROM todo WHERE id=?`
+	query := `SELECT * FROM todo WHERE id=?`
 	stmt, err := s.db.Prepare(query)
 	if err != nil {
 		return types.Todo{}, err
@@ -147,4 +173,11 @@ func (s *SqliteTodoStore) Delete(id int64) error {
 	query := `DELETE FROM todo WHERE id=?;`
 	_, err := s.db.Exec(query, id)
 	return err
+}
+
+func (s *SqliteTodoStore) Close() error {
+	if s.db != nil {
+		return s.db.Close()
+	}
+	return nil
 }

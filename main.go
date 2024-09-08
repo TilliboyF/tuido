@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"log"
 
 	"github.com/TilliboyF/tuido/common"
@@ -84,14 +83,14 @@ func NewVersionCmd() *cobra.Command {
 		Short:                 "Get version of app",
 		DisableFlagsInUseLine: true,
 		Run: func(cmd *cobra.Command, args []string) {
-			fmt.Printf("tuido app version %s\n", version)
+			cmd.Printf("tuido app version %s\n", version)
 		},
 	}
 	return versionCmd
 }
 
 func main() {
-	handler, err := handler.NewTodoHandler("")
+	handler, err := handler.NewTodoHandler(false)
 	if err != nil {
 		log.Fatal(err)
 	}
