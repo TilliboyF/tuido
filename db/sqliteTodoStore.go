@@ -4,7 +4,6 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
-	"log"
 	"os"
 	"path/filepath"
 
@@ -26,15 +25,16 @@ func getDBPath() (string, error) {
 	return dbPath, nil
 }
 
-func initializeDB() (*sql.DB, error) {
-	dbPath, err := getDBPath()
-	log.Println("dbPath: ", dbPath)
-	if err != nil {
-		return nil, err
+func initializeDB(dbPath string) (*sql.DB, error) {
+	if dbPath == "" {
+		var err error
+		dbPath, err = getDBPath()
+		if err != nil {
+			return nil, err
+		}
 	}
+
 	if _, err := os.Stat(dbPath); os.IsNotExist(err) {
-		log.Println("Error: ", err)
-		log.Println("Creating db in: ", dbPath)
 		err = os.MkdirAll(filepath.Dir(dbPath), os.ModePerm)
 		if err != nil {
 			return nil, err
@@ -58,8 +58,8 @@ func initializeDB() (*sql.DB, error) {
 	return sql.Open("sqlite3", dbPath)
 }
 
-func NewSqliteTodoStore() (*SqliteTodoStore, error) {
-	db, err := initializeDB()
+func NewSqliteTodoStore(dbPath string) (*SqliteTodoStore, error) {
+	db, err := initializeDB(dbPath)
 	if err != nil {
 		return nil, err
 	}
