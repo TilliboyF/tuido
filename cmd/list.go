@@ -10,7 +10,7 @@ var listCmd = &cobra.Command{
 	Short:   "List all todos",
 	Long:    `List all unfinished todos, use flag -a to see all todos`,
 	PreRunE: common.ArgsCheckFunc(0),
-	RunE:    TodoHandler.HandleList,
+	RunE:    todoHandler.HandleList,
 }
 
 func init() {

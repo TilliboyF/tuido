@@ -13,7 +13,7 @@ const (
 )
 
 func TestNewSqliteTodoStore(t *testing.T) {
-	db, err := NewSqliteTodoStore(testDB)
+	db, err := NewSqliteTodoStore()
 	if nil != err {
 		t.Log("Error creating db: ", err)
 		t.Fail()
@@ -26,7 +26,7 @@ func TestNewSqliteTodoStore(t *testing.T) {
 }
 
 func TestSqliteStoreAdd(t *testing.T) {
-	db, _ := NewSqliteTodoStore(testDB)
+	db, _ := NewSqliteTodoStore()
 	todo := types.Todo{
 		ID:   -1,
 		Name: "test",

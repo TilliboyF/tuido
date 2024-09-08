@@ -12,9 +12,9 @@ import (
 )
 
 const (
-	DB_LOCATION = "./data.db"
-	Unchecked   = "☐"
-	Checked     = "☑"
+	DB_NAME   = "data.db"
+	Unchecked = "☐"
+	Checked   = "☑"
 )
 
 func PrintTodos(todos []types.Todo) {

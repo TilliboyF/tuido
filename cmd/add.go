@@ -11,7 +11,7 @@ var addCmd = &cobra.Command{
 	Long:                  `adding a new todo`,
 	DisableFlagsInUseLine: true,
 	PreRunE:               common.ArgsCheckFunc(1),
-	RunE:                  TodoHandler.HandleAddTodo,
+	RunE:                  todoHandler.HandleAddTodo,
 }
 
 func init() {

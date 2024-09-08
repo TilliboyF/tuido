@@ -2,6 +2,7 @@ package handler
 
 import (
 	"fmt"
+	"log"
 	"strconv"
 	"time"
 
@@ -12,13 +13,14 @@ import (
 )
 
 type TodoHandler struct {
-	store types.TodoStore
+	store *db.SqliteTodoStore
 }
 
 func NewTodoHandler() (*TodoHandler, error) {
-	if store, err := db.NewSqliteTodoStore(common.DB_LOCATION); err != nil {
+	if store, err := db.NewSqliteTodoStore(); err != nil {
 		return nil, err
 	} else {
+		log.Println("Store: ", store)
 		return &TodoHandler{
 			store: store,
 		}, nil
@@ -29,6 +31,7 @@ func (h *TodoHandler) HandleAddTodo(cmd *cobra.Command, args []string) error {
 	todo := types.Todo{
 		Name: args[0],
 	}
+	log.Println("Handler state: ", h)
 	err := h.store.Add(&todo)
 	if err != nil {
 		return err
@@ -90,7 +93,7 @@ func (h *TodoHandler) HandleComplete(cmd *cobra.Command, args []string) error {
 	if err != nil {
 		return fmt.Errorf("Given <id> = %s is not a integer", idString)
 	}
-	store, err := db.NewSqliteTodoStore(common.DB_LOCATION)
+	store, err := db.NewSqliteTodoStore()
 	if err != nil {
 		return err
 	}

@@ -11,7 +11,7 @@ var deleteCmd = &cobra.Command{
 	Long:                  `Delete a todo`,
 	DisableFlagsInUseLine: true,
 	PreRunE:               common.ArgsCheckFunc(1),
-	RunE:                  TodoHandler.HandleDelete,
+	RunE:                  todoHandler.HandleDelete,
 }
 
 func init() {

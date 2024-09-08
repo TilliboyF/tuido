@@ -11,7 +11,7 @@ var completeCmd = &cobra.Command{
 	Long:                  `Complete a task by the given id`,
 	DisableFlagsInUseLine: true,
 	PreRunE:               common.ArgsCheckFunc(1),
-	RunE:                  TodoHandler.HandleComplete,
+	RunE:                  todoHandler.HandleComplete,
 }
 
 func init() {

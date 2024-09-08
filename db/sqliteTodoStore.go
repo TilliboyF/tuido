@@ -5,8 +5,10 @@ import (
 	"errors"
 	"fmt"
 	"log"
-	"log/slog"
+	"os"
+	"path/filepath"
 
+	"github.com/TilliboyF/tuido/common"
 	"github.com/TilliboyF/tuido/types"
 	_ "github.com/mattn/go-sqlite3"
 )
@@ -15,23 +17,56 @@ type SqliteTodoStore struct {
 	db *sql.DB
 }
 
-func NewSqliteTodoStore(connectString string) (*SqliteTodoStore, error) {
-	db, err := sql.Open("sqlite3", connectString)
+func getDBPath() (string, error) {
+	configDir, err := os.UserConfigDir()
+	if err != nil {
+		return "", err
+	}
+	dbPath := filepath.Join(configDir, "tuido", common.DB_NAME)
+	return dbPath, nil
+}
+
+func initializeDB() (*sql.DB, error) {
+	dbPath, err := getDBPath()
+	log.Println("dbPath: ", dbPath)
+	if err != nil {
+		return nil, err
+	}
+	if _, err := os.Stat(dbPath); os.IsNotExist(err) {
+		log.Println("Error: ", err)
+		log.Println("Creating db in: ", dbPath)
+		err = os.MkdirAll(filepath.Dir(dbPath), os.ModePerm)
+		if err != nil {
+			return nil, err
+		}
+		db, err := sql.Open("sqlite3", dbPath)
+		if err != nil {
+			return nil, err
+		}
+		stmt := `CREATE TABLE todo (
+					id INTEGER PRIMARY KEY AUTOINCREMENT,
+					name TEXT,
+					done BOOLEAN DEFAULT false,
+					createdat datetime default current_timestamp
+				)`
+		_, err = db.Exec(stmt)
+		if err != nil {
+			return nil, err
+		}
+		return db, nil
+	}
+	return sql.Open("sqlite3", dbPath)
+}
+
+func NewSqliteTodoStore() (*SqliteTodoStore, error) {
+	db, err := initializeDB()
 	if err != nil {
 		return nil, err
 	}
 	data := SqliteTodoStore{
 		db: db,
 	}
-	// check if seeding is needed
-	_, err = db.Query(`SELECT * FROM todo`)
-	if err != nil {
-		if err := data.Seed(); err != nil {
-			log.Println(err)
-		}
-	}
 	return &data, nil
-
 }
 
 func (s *SqliteTodoStore) Add(t *types.Todo) error {
@@ -111,19 +146,5 @@ func (s *SqliteTodoStore) Complete(id int64) error {
 func (s *SqliteTodoStore) Delete(id int64) error {
 	query := `DELETE FROM todo WHERE id=?;`
 	_, err := s.db.Exec(query, id)
-	return err
-}
-
-func (s *SqliteTodoStore) Seed() error {
-	slog.Info("Seeding db...")
-
-	stmt := `CREATE TABLE todo (
-				id INTEGER PRIMARY KEY AUTOINCREMENT,
-				name TEXT,
-				done BOOLEAN DEFAULT false,
-				createdat datetime default current_timestamp
-			)`
-
-	_, err := s.db.Exec(stmt)
 	return err
 }

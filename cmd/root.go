@@ -11,7 +11,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var TodoHandler *handler.TodoHandler
+var todoHandler *handler.TodoHandler
 
 var rootCmd = &cobra.Command{
 	Use:   "tuido",
@@ -27,9 +27,10 @@ func Execute() {
 }
 
 func init() {
-	handler, err := handler.NewTodoHandler()
+	var err error
+	todoHandler, err = handler.NewTodoHandler()
 	if err != nil {
 		log.Fatal("Error init: ", err)
 	}
-	TodoHandler = handler
+	log.Println("Test: ", todoHandler)
 }
