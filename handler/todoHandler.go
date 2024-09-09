@@ -34,7 +34,8 @@ func (h *TodoHandler) HandleAddTodo(cmd *cobra.Command, args []string) error {
 		return err
 	}
 	todo.CreatedAt = time.Now()
-	common.PrintTodo(todo)
+	table := common.TableStringFromTodo(todo)
+	cmd.Print(table)
 
 	return nil
 }
@@ -52,7 +53,8 @@ func (h *TodoHandler) HandleList(cmd *cobra.Command, args []string) error {
 	}
 
 	if all {
-		common.PrintTodos(todos)
+		table := common.TableStringFromTodos(todos)
+		cmd.Print(table)
 	} else {
 		filteredTodos := []types.Todo{}
 		for _, todo := range todos {
@@ -60,7 +62,8 @@ func (h *TodoHandler) HandleList(cmd *cobra.Command, args []string) error {
 				filteredTodos = append(filteredTodos, todo)
 			}
 		}
-		common.PrintTodos(filteredTodos)
+		table := common.TableStringFromTodos(filteredTodos)
+		cmd.Print(table)
 	}
 
 	return nil
@@ -80,7 +83,7 @@ func (h *TodoHandler) HandleDelete(cmd *cobra.Command, args []string) error {
 	if err != nil {
 		return err
 	}
-	fmt.Printf("Task id=%d deleted!\n", id)
+	cmd.Printf("Task id=%d deleted!\n", id)
 	return nil
 }
 
@@ -99,6 +102,7 @@ func (h *TodoHandler) HandleComplete(cmd *cobra.Command, args []string) error {
 		return err
 	}
 	todo.Done = true
-	common.PrintTodo(todo)
+	table := common.TableStringFromTodo(todo)
+	cmd.Print(table)
 	return nil
 }

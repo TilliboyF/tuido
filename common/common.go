@@ -1,6 +1,7 @@
 package common
 
 import (
+	"bytes"
 	"os"
 
 	"github.com/fatih/color"
@@ -17,7 +18,7 @@ const (
 	Checked   = "☑"
 )
 
-func PrintTodos(todos []types.Todo) {
+func TableStringFromTodos(todos []types.Todo) string {
 	headerFmt := color.New(color.FgCyan, color.Underline).SprintfFunc()
 	columnFmt := color.New(color.FgYellow).SprintfFunc()
 
@@ -28,11 +29,13 @@ func PrintTodos(todos []types.Todo) {
 		tbl.AddRow(todo.ID, todo.Name, timediff.TimeDiff(todo.CreatedAt), getCheckBox(todo.Done))
 	}
 
+	buf := new(bytes.Buffer)
+	tbl.WithWriter(buf)
 	tbl.Print()
-
+	return buf.String()
 }
 
-func PrintTodo(todo types.Todo) {
+func TableStringFromTodo(todo types.Todo) string {
 	headerFmt := color.New(color.FgCyan, color.Underline).SprintfFunc()
 	columnFmt := color.New(color.FgYellow).SprintfFunc()
 
@@ -41,7 +44,10 @@ func PrintTodo(todo types.Todo) {
 
 	tbl.AddRow(todo.ID, todo.Name, timediff.TimeDiff(todo.CreatedAt), getCheckBox(todo.Done))
 
+	buf := new(bytes.Buffer)
+	tbl.WithWriter(buf)
 	tbl.Print()
+	return buf.String()
 }
 
 func getCheckBox(done bool) string {
