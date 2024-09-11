@@ -7,8 +7,11 @@ import (
 
 	"github.com/TilliboyF/tuido/common"
 	"github.com/TilliboyF/tuido/db"
+	"github.com/TilliboyF/tuido/tui"
 	"github.com/TilliboyF/tuido/types"
 	"github.com/spf13/cobra"
+
+	tea "github.com/charmbracelet/bubbletea"
 )
 
 type TodoHandler struct {
@@ -104,5 +107,18 @@ func (h *TodoHandler) HandleComplete(cmd *cobra.Command, args []string) error {
 	todo.Done = true
 	table := common.TableStringFromTodo(todo)
 	cmd.Print(table)
+	return nil
+}
+
+func (h *TodoHandler) HandleMain(cmd *cobra.Command, args []string) error {
+	if len(args) == 0 {
+		// TODO Open tui
+
+		model := tui.NewModel(h.store)
+
+		if _, err := tea.NewProgram(model).Run(); err != nil {
+			return err
+		}
+	}
 	return nil
 }

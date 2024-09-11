@@ -15,7 +15,7 @@ type Todo struct {
 	CreatedAt time.Time
 }
 
-func (t *Todo) String() string {
+func (t Todo) String() string {
 	return fmt.Sprintf("%d|%s|%v|%v", t.ID, t.Name, "false", timediff.TimeDiff(t.CreatedAt))
 }
 

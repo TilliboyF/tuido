@@ -2,6 +2,7 @@ package common
 
 import (
 	"bytes"
+	"fmt"
 	"os"
 
 	"github.com/fatih/color"
@@ -18,6 +19,23 @@ const (
 	Checked   = "☑"
 )
 
+func StringArray(t types.Todo) []string {
+	return []string{
+		fmt.Sprintf("%d", t.ID),
+		t.Name,
+		ToString(t.Done),
+		timediff.TimeDiff(t.CreatedAt),
+	}
+}
+
+func ToString(b bool) string {
+	if b {
+		return "true"
+	} else {
+		return "false"
+	}
+}
+
 func TableStringFromTodos(todos []types.Todo) string {
 	headerFmt := color.New(color.FgCyan, color.Underline).SprintfFunc()
 	columnFmt := color.New(color.FgYellow).SprintfFunc()
@@ -26,7 +44,7 @@ func TableStringFromTodos(todos []types.Todo) string {
 	tbl.WithHeaderFormatter(headerFmt).WithFirstColumnFormatter(columnFmt)
 
 	for _, todo := range todos {
-		tbl.AddRow(todo.ID, todo.Name, timediff.TimeDiff(todo.CreatedAt), getCheckBox(todo.Done))
+		tbl.AddRow(todo.ID, todo.Name, timediff.TimeDiff(todo.CreatedAt), GetCheckBox(todo.Done))
 	}
 
 	buf := new(bytes.Buffer)
@@ -42,7 +60,7 @@ func TableStringFromTodo(todo types.Todo) string {
 	tbl := table.New("ID", "Name", "CreatedAt", "Done")
 	tbl.WithHeaderFormatter(headerFmt).WithFirstColumnFormatter(columnFmt)
 
-	tbl.AddRow(todo.ID, todo.Name, timediff.TimeDiff(todo.CreatedAt), getCheckBox(todo.Done))
+	tbl.AddRow(todo.ID, todo.Name, timediff.TimeDiff(todo.CreatedAt), GetCheckBox(todo.Done))
 
 	buf := new(bytes.Buffer)
 	tbl.WithWriter(buf)
@@ -50,7 +68,8 @@ func TableStringFromTodo(todo types.Todo) string {
 	return buf.String()
 }
 
-func getCheckBox(done bool) string {
+func GetCheckBox(done bool) string {
+
 	checkbox := Unchecked
 	c := color.FgRed
 	if done {

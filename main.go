@@ -17,6 +17,7 @@ func NewRootCmd(handler *handler.TodoHandler) *cobra.Command {
 		Use:   "tuido",
 		Short: "Todo list app",
 		Long:  `Application to store and handle your todos in one place!`,
+		RunE:  handler.HandleMain,
 	}
 	rootCmd.AddCommand(NewAddCmd(handler))
 	rootCmd.AddCommand(NewCompleteCmd(handler))
