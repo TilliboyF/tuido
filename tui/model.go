@@ -77,7 +77,7 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				m.table.Focus()
 			}
 		case "e":
-			f := NewForm(types.Todo{}, &m)
+			f := NewForm(types.Todo{Name: "test"}, &m)
 			return f.Update(nil)
 
 		case "q":

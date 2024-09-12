@@ -51,6 +51,7 @@ func NewStyles(lg *lipgloss.Renderer) *Styles {
 }
 
 type Form struct {
+	isInit    bool
 	done      bool
 	todo      types.Todo
 	lg        *lipgloss.Renderer
@@ -60,14 +61,14 @@ type Form struct {
 }
 
 func NewForm(todo types.Todo, mainModel *Model) Form {
-	form := Form{todo: todo, mainModel: mainModel}
+	form := Form{todo: todo, mainModel: mainModel, isInit: true}
 	form.lg = lipgloss.DefaultRenderer()
 	form.styles = NewStyles(form.lg)
 	form.form = huh.NewForm(
 		huh.NewGroup(
 			huh.NewInput().
 				Key("name").
-				Title("Name"),
+				Title("Name").Value(&todo.Name),
 
 			huh.NewSelect[string]().
 				Key("status").
@@ -95,6 +96,7 @@ func (f Form) Init() tea.Cmd {
 }
 
 func (f Form) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
 		switch msg.String() {
@@ -102,6 +104,13 @@ func (f Form) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			return f, tea.Quit
 		}
 	}
+
+	if f.isInit {
+
+		f.isInit = false
+		return f, tea.Sequence(f.form.NextField(), f.form.PrevField())
+	}
+
 	var cmds []tea.Cmd
 
 	// Process the form
@@ -115,7 +124,7 @@ func (f Form) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		return f.mainModel.Update(nil)
 	}
 
-	return f, tea.Batch(cmds...)
+	return f, tea.Sequence(cmds...)
 
 }
 
