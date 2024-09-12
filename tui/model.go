@@ -3,6 +3,7 @@ package tui
 import (
 	"github.com/TilliboyF/tuido/common"
 	"github.com/TilliboyF/tuido/db"
+	"github.com/TilliboyF/tuido/types"
 	"github.com/charmbracelet/bubbles/table"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
@@ -21,8 +22,9 @@ var (
 )
 
 type Model struct {
-	store *db.SqliteTodoStore
-	table table.Model
+	quitting bool
+	store    *db.SqliteTodoStore
+	table    table.Model
 }
 
 func NewModel(store *db.SqliteTodoStore) Model {
@@ -74,8 +76,12 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			} else {
 				m.table.Focus()
 			}
+		case "e":
+			f := NewForm(types.Todo{}, &m)
+			return f.Update(nil)
 
 		case "q":
+			m.quitting = true
 			return m, tea.Quit
 
 		case "enter":
@@ -89,5 +95,8 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 }
 
 func (m Model) View() string {
+	if m.quitting {
+		return ""
+	}
 	return baseStyle.Render(m.table.View()) + "\n  " + m.table.HelpView() + "\n"
 }
