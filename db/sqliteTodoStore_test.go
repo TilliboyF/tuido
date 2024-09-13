@@ -46,7 +46,7 @@ func TestSqliteTodoStore_InMemory(t *testing.T) {
 				assert.NoError(t, err)
 				assert.Equal(t, 1, len(todos))
 				assert.Equal(t, "Task 1", todos[0].Name)
-				assert.False(t, todos[0].Done)
+				assert.Equal(t, types.TODO, todos[0].Status)
 			},
 		},
 		{
@@ -60,7 +60,7 @@ func TestSqliteTodoStore_InMemory(t *testing.T) {
 				todo, err := store.GetById(1)
 				assert.NoError(t, err)
 				assert.Equal(t, "Task 1", todo.Name)
-				assert.False(t, todo.Done)
+				assert.Equal(t, types.TODO, todo.Status)
 			},
 		},
 		{
@@ -73,7 +73,7 @@ func TestSqliteTodoStore_InMemory(t *testing.T) {
 				// Verify that the todo is marked as done
 				todo, err := store.GetById(1)
 				assert.NoError(t, err)
-				assert.True(t, todo.Done)
+				assert.Equal(t, types.DONE, todo.Status)
 			},
 		},
 		{
@@ -136,8 +136,8 @@ func TestSqliteTodoStore_Mock(t *testing.T) {
 			name: "Get all todo items",
 			mock: func() {
 				rows := sqlmock.NewRows([]string{"id", "name", "done", "createdat"}).
-					AddRow(1, "Task 1", false, time.Now()).
-					AddRow(2, "Task 2", false, time.Now())
+					AddRow(1, "Task 1", 0, time.Now()).
+					AddRow(2, "Task 2", 0, time.Now())
 				mock.ExpectPrepare("SELECT \\* FROM todo").
 					ExpectQuery().
 					WillReturnRows(rows)
@@ -154,7 +154,7 @@ func TestSqliteTodoStore_Mock(t *testing.T) {
 			name: "Get todo by ID",
 			mock: func() {
 				rows := sqlmock.NewRows([]string{"id", "name", "done", "createdat"}).
-					AddRow(1, "Task 1", false, time.Now())
+					AddRow(1, "Task 1", 0, time.Now())
 				mock.ExpectPrepare("SELECT \\* FROM todo WHERE id=\\?").
 					ExpectQuery().
 					WithArgs(1).
@@ -170,7 +170,7 @@ func TestSqliteTodoStore_Mock(t *testing.T) {
 			name: "Complete todo item",
 			mock: func() {
 				// Mock the behavior for Complete (UPDATE query)
-				mock.ExpectExec("UPDATE todo SET done=true WHERE id=\\?").
+				mock.ExpectExec("UPDATE todo SET status=2 WHERE id=\\?").
 					WithArgs(1).
 					WillReturnResult(sqlmock.NewResult(0, 1))
 			},

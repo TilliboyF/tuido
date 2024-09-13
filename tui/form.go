@@ -85,7 +85,7 @@ func initForm(todo types.Todo, isNew bool, mainModel *Model) Form {
 			huh.NewSelect[string]().
 				Key("status").
 				Title("Status").
-				Options(huh.NewOptions("todo", "done")...),
+				Options(huh.NewOptions("todo", "in progress", "done")...),
 			huh.NewConfirm().
 				Key("done").
 				Title("All done?").
@@ -134,15 +134,20 @@ func (f Form) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	if f.form.State == huh.StateCompleted {
 
 		statusString := f.form.GetString("status")
-		status := true
-		if statusString == "todo" {
-			status = false
+		var status types.Status
+		switch statusString {
+		case "todo":
+			status = types.TODO
+		case "in progress":
+			status = types.INPROGRESS
+		case "done":
+			status = types.DONE
 		}
 
 		name := f.form.GetString("name")
 		f.todo.Name = name
 
-		f.todo.Done = status
+		f.todo.Status = status
 
 		if f.isNew {
 			f.todo.ID = -1

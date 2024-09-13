@@ -23,16 +23,8 @@ func StringArray(t types.Todo) []string {
 	return []string{
 		fmt.Sprintf("%d", t.ID),
 		t.Name,
-		ToString(t.Done),
+		t.Status.String(),
 		timediff.TimeDiff(t.CreatedAt),
-	}
-}
-
-func ToString(b bool) string {
-	if b {
-		return "true"
-	} else {
-		return "false"
 	}
 }
 
@@ -44,7 +36,7 @@ func TableStringFromTodos(todos []types.Todo) string {
 	tbl.WithHeaderFormatter(headerFmt).WithFirstColumnFormatter(columnFmt)
 
 	for _, todo := range todos {
-		tbl.AddRow(todo.ID, todo.Name, timediff.TimeDiff(todo.CreatedAt), GetCheckBox(todo.Done))
+		tbl.AddRow(todo.ID, todo.Name, timediff.TimeDiff(todo.CreatedAt), todo.Status)
 	}
 
 	buf := new(bytes.Buffer)
@@ -60,7 +52,7 @@ func TableStringFromTodo(todo types.Todo) string {
 	tbl := table.New("ID", "Name", "CreatedAt", "Done")
 	tbl.WithHeaderFormatter(headerFmt).WithFirstColumnFormatter(columnFmt)
 
-	tbl.AddRow(todo.ID, todo.Name, timediff.TimeDiff(todo.CreatedAt), GetCheckBox(todo.Done))
+	tbl.AddRow(todo.ID, todo.Name, timediff.TimeDiff(todo.CreatedAt), todo.Status)
 
 	buf := new(bytes.Buffer)
 	tbl.WithWriter(buf)

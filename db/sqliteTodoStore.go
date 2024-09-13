@@ -128,7 +128,7 @@ func (s *SqliteTodoStore) GetAll() ([]types.Todo, error) {
 
 	for rows.Next() {
 		var todo types.Todo
-		if err := rows.Scan(&todo.ID, &todo.Name, &todo.Done, &todo.CreatedAt); err != nil {
+		if err := rows.Scan(&todo.ID, &todo.Name, &todo.Status, &todo.CreatedAt); err != nil {
 			return nil, err
 		}
 		todos = append(todos, todo)
@@ -147,7 +147,7 @@ func (s *SqliteTodoStore) GetById(id int64) (types.Todo, error) {
 	var todo types.Todo
 
 	row := stmt.QueryRow(id)
-	if err := row.Scan(&todo.ID, &todo.Name, &todo.Done, &todo.CreatedAt); err != nil {
+	if err := row.Scan(&todo.ID, &todo.Name, &todo.Status, &todo.CreatedAt); err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return types.Todo{}, fmt.Errorf("no todo found with id=%d", id)
 		}
@@ -158,7 +158,7 @@ func (s *SqliteTodoStore) GetById(id int64) (types.Todo, error) {
 }
 
 func (s *SqliteTodoStore) Complete(id int64) error {
-	query := "UPDATE todo SET done=true WHERE id=?;"
+	query := "UPDATE todo SET status=2 WHERE id=?;"
 	_, err := s.db.Exec(query, id)
 	if err != nil {
 		return err

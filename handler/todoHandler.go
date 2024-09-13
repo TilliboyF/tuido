@@ -61,7 +61,7 @@ func (h *TodoHandler) HandleList(cmd *cobra.Command, args []string) error {
 	} else {
 		filteredTodos := []types.Todo{}
 		for _, todo := range todos {
-			if !todo.Done {
+			if todo.Status == types.TODO {
 				filteredTodos = append(filteredTodos, todo)
 			}
 		}
@@ -104,7 +104,7 @@ func (h *TodoHandler) HandleComplete(cmd *cobra.Command, args []string) error {
 	if err != nil {
 		return err
 	}
-	todo.Done = true
+	todo.Status = types.DONE
 	table := common.TableStringFromTodo(todo)
 	cmd.Print(table)
 	return nil

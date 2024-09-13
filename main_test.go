@@ -39,7 +39,7 @@ func TestMain(t *testing.T) {
 				return common.TableStringFromTodo(types.Todo{
 					Name:      "Task 1",
 					ID:        1,
-					Done:      false,
+					Status:    types.TODO,
 					CreatedAt: time.Now(),
 				})
 			},

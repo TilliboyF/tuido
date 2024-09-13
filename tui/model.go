@@ -16,7 +16,7 @@ var (
 	columns = []table.Column{
 		{Title: "ID", Width: 2},
 		{Title: "Name", Width: 20},
-		{Title: "Status", Width: 6},
+		{Title: "Status", Width: 8},
 		{Title: "CreatedAt", Width: 15},
 	}
 )
