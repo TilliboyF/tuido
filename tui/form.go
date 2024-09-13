@@ -51,8 +51,12 @@ func NewStyles(lg *lipgloss.Renderer) *Styles {
 }
 
 type Form struct {
-	isInit    bool
-	done      bool
+	/* Control Flow */
+	isInit bool
+	done   bool
+	isNew  bool
+
+	/* Form fields */
 	todo      types.Todo
 	lg        *lipgloss.Renderer
 	styles    *Styles
@@ -61,7 +65,15 @@ type Form struct {
 }
 
 func NewForm(todo types.Todo, mainModel *Model) Form {
-	form := Form{todo: todo, mainModel: mainModel, isInit: true}
+	return initForm(todo, false, mainModel)
+}
+
+func NewEmptyForm(mainModel *Model) Form {
+	return initForm(types.Todo{}, true, mainModel)
+}
+
+func initForm(todo types.Todo, isNew bool, mainModel *Model) Form {
+	form := Form{todo: todo, mainModel: mainModel, isInit: true, isNew: isNew}
 	form.lg = lipgloss.DefaultRenderer()
 	form.styles = NewStyles(form.lg)
 	form.form = huh.NewForm(
@@ -100,8 +112,8 @@ func (f Form) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
 		switch msg.String() {
-		case "esc", "ctrl+c", "q":
-			return f, tea.Quit
+		case "esc", "ctrl+c":
+			return f.mainModel.Update(nil)
 		}
 	}
 
@@ -120,8 +132,23 @@ func (f Form) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		cmds = append(cmds, cmd)
 	}
 	if f.form.State == huh.StateCompleted {
-		// Quit when the form is done.
-		return f.mainModel.Update(nil)
+
+		statusString := f.form.GetString("status")
+		status := true
+		if statusString == "todo" {
+			status = false
+		}
+
+		name := f.form.GetString("name")
+		f.todo.Name = name
+
+		f.todo.Done = status
+
+		if f.isNew {
+			f.todo.ID = -1
+		}
+
+		return f.mainModel.Update(f.todo)
 	}
 
 	return f, tea.Sequence(cmds...)

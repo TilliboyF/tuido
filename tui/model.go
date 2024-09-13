@@ -38,7 +38,7 @@ func NewModel(store *db.SqliteTodoStore) Model {
 		table.WithRows(rows),
 		table.WithFocused(true),
 		table.WithWidth(50),
-		table.WithHeight(len(todos)),
+		table.WithHeight(len(todos)+5),
 	)
 
 	s := table.DefaultStyles()
@@ -68,6 +68,11 @@ func (m Model) Init() tea.Cmd {
 func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	var cmd tea.Cmd
 	switch msg := msg.(type) {
+
+	case types.Todo:
+		m.table, cmd = m.HandleTodoReturn(msg)
+		return m, cmd
+
 	case tea.KeyMsg:
 		switch msg.String() {
 		case "esc":
@@ -78,6 +83,10 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			}
 		case "e":
 			f := NewForm(types.Todo{Name: "test"}, &m)
+			return f.Update(nil)
+
+		case "n":
+			f := NewEmptyForm(&m)
 			return f.Update(nil)
 
 		case "q":
@@ -99,4 +108,20 @@ func (m Model) View() string {
 		return ""
 	}
 	return baseStyle.Render(m.table.View()) + "\n  " + m.table.HelpView() + "\n"
+}
+
+func (m Model) HandleTodoReturn(todo types.Todo) (table.Model, tea.Cmd) {
+	if todo.ID == -1 { // new todo
+		m.store.Add(&todo)
+
+		todo, _ = m.store.GetById(todo.ID)
+
+		currentRows := m.table.Rows()
+		currentRows = append(currentRows, common.StringArray(todo))
+		m.table.SetRows(currentRows)
+		m.table.UpdateViewport()
+		return m.table.Update(nil)
+	} else { // existing one
+		return table.Model{}, nil
+	}
 }
