@@ -2,6 +2,7 @@ package db
 
 import (
 	"database/sql"
+	"embed"
 	"errors"
 	"fmt"
 	"os"
@@ -11,7 +12,11 @@ import (
 	"github.com/TilliboyF/tuido/common"
 	"github.com/TilliboyF/tuido/types"
 	_ "github.com/mattn/go-sqlite3"
+	"github.com/pressly/goose/v3"
 )
+
+//go:embed migrations/*.sql
+var embedMigrations embed.FS
 
 type SqliteTodoStore struct {
 	db *sql.DB
@@ -30,45 +35,37 @@ func initializeDB(useInMemory bool) (*sql.DB, error) {
 
 	var dbPath string
 	var err error
-	var seedDb bool = false
 
 	if useInMemory {
 		dbPath = ":memory:"
-		seedDb = true
 	} else {
 		dbPath, err = getDBPath()
 		if err != nil {
 			return nil, err
 		}
+		if _, err := os.Stat(dbPath); os.IsNotExist(err) {
+			err = os.MkdirAll(filepath.Dir(dbPath), os.ModePerm)
+			if err != nil {
+				return nil, err
+			}
+		}
 	}
 
-	if _, err := os.Stat(dbPath); os.IsNotExist(err) {
-		err = os.MkdirAll(filepath.Dir(dbPath), os.ModePerm)
-		if err != nil {
-			return nil, err
-		}
-		seedDb = true
+	db, err := sql.Open("sqlite3", dbPath)
+	if err != nil {
+		return nil, err
 	}
 
-	if seedDb {
-		db, err := sql.Open("sqlite3", dbPath)
-		if err != nil {
-			return nil, err
-		}
-		stmt := `CREATE TABLE todo (
-					id INTEGER PRIMARY KEY AUTOINCREMENT,
-					name TEXT,
-					done BOOLEAN DEFAULT false,
-					createdat datetime default current_timestamp
-				)`
-		_, err = db.Exec(stmt)
-		if err != nil {
-			return nil, err
-		}
-		return db, nil
-	}
+	goose.SetBaseFS(embedMigrations)
+	goose.SetLogger(goose.NopLogger())
 
-	return sql.Open("sqlite3", dbPath)
+	if err := goose.SetDialect("sqlite3"); err != nil {
+		return nil, err
+	}
+	if err := goose.Up(db, "migrations"); err != nil {
+		return nil, err
+	}
+	return db, nil
 }
 
 func NewSqliteTodoStore(useMock bool, useInMemory bool) (*SqliteTodoStore, sqlmock.Sqlmock, error) {
