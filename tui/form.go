@@ -82,7 +82,13 @@ func initForm(todo types.Todo, isNew bool, mainModel *Model) Form {
 			huh.NewGroup(
 				huh.NewInput().
 					Key("name").
-					Title("Name").Value(&todo.Name),
+					Title("Name").
+					Value(&todo.Name),
+
+				huh.NewText().
+					Key("description").
+					Title("Description").
+					Value(&todo.Description),
 
 				huh.NewConfirm().
 					Key("done").
@@ -103,6 +109,11 @@ func initForm(todo types.Todo, isNew bool, mainModel *Model) Form {
 				huh.NewInput().
 					Key("name").
 					Title("Name").Value(&todo.Name),
+
+				huh.NewText().
+					Key("description").
+					Title("Description").
+					Value(&todo.Description),
 
 				huh.NewSelect[string]().
 					Key("status").
@@ -148,7 +159,6 @@ func (f Form) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 	var cmds []tea.Cmd
 
-	// Process the form
 	form, cmd := f.form.Update(msg)
 	if newf, ok := form.(*huh.Form); ok {
 		f.form = newf
@@ -175,6 +185,8 @@ func (f Form) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 		name := f.form.GetString("name")
 		f.todo.Name = name
+		desc := f.form.GetString("description")
+		f.todo.Description = desc
 
 		f.todo.Status = status
 

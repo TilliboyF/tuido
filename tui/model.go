@@ -14,11 +14,11 @@ import (
 var (
 	baseStyle = lipgloss.NewStyle().
 			BorderStyle(lipgloss.NormalBorder()).
-			BorderForeground(lipgloss.Color("240"))
+			BorderForeground(lipgloss.AdaptiveColor{Light: "#5A56E0", Dark: "#7571F9"})
 	columns = []table.Column{
 		{Title: "ID", Width: 2},
-		{Title: "Name", Width: 20},
-		{Title: "Status", Width: 8},
+		{Title: "Name", Width: 15},
+		{Title: "Status", Width: 12},
 		{Title: "CreatedAt", Width: 25},
 	}
 )
@@ -39,16 +39,18 @@ func NewModel(store *db.SqliteTodoStore) Model {
 		table.WithColumns(columns),
 		table.WithRows(rows),
 		table.WithFocused(true),
-		table.WithWidth(55),
+		// table.WithWidth(50),
 		table.WithHeight(len(todos)+5),
 	)
 
 	s := table.DefaultStyles()
+
 	s.Header = s.Header.
 		BorderStyle(lipgloss.NormalBorder()).
-		BorderForeground(lipgloss.Color("240")).
+		BorderForeground(lipgloss.AdaptiveColor{Light: "#5A56E0", Dark: "#7571F9"}).
 		BorderBottom(true).
-		Bold(false)
+		Bold(false).
+		Foreground(lipgloss.AdaptiveColor{Light: "#02BA84", Dark: "#02BF87"})
 	s.Selected = s.Selected.
 		Foreground(lipgloss.Color("229")).
 		Background(lipgloss.Color("57")).
