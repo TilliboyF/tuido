@@ -1,6 +1,8 @@
 package tui
 
 import (
+	"strconv"
+
 	"github.com/TilliboyF/tuido/common"
 	"github.com/TilliboyF/tuido/db"
 	"github.com/TilliboyF/tuido/types"
@@ -17,7 +19,7 @@ var (
 		{Title: "ID", Width: 2},
 		{Title: "Name", Width: 20},
 		{Title: "Status", Width: 8},
-		{Title: "CreatedAt", Width: 15},
+		{Title: "CreatedAt", Width: 25},
 	}
 )
 
@@ -37,7 +39,7 @@ func NewModel(store *db.SqliteTodoStore) Model {
 		table.WithColumns(columns),
 		table.WithRows(rows),
 		table.WithFocused(true),
-		table.WithWidth(50),
+		table.WithWidth(55),
 		table.WithHeight(len(todos)+5),
 	)
 
@@ -82,7 +84,18 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				m.table.Focus()
 			}
 		case "e":
-			f := NewForm(types.Todo{Name: "test"}, &m)
+			currentRow := m.table.SelectedRow()
+			todoID, err := strconv.ParseInt(currentRow[0], 10, 64)
+			if err != nil {
+				panic("That should not happen")
+			}
+
+			todo, err := m.store.GetById(todoID)
+			if err != nil {
+				panic("That should not happen")
+			}
+
+			f := NewForm(todo, &m)
 			return f.Update(nil)
 
 		case "n":
@@ -122,6 +135,17 @@ func (m Model) HandleTodoReturn(todo types.Todo) (table.Model, tea.Cmd) {
 		m.table.UpdateViewport()
 		return m.table.Update(nil)
 	} else { // existing one
-		return table.Model{}, nil
+		err := m.store.Update(&todo)
+		if err != nil {
+			//tbd
+		}
+		todos, _ := m.store.GetAll()
+		var rows []table.Row
+		for _, todo := range todos {
+			rows = append(rows, common.StringArray(todo))
+		}
+		m.table.SetRows(rows)
+		m.table.UpdateViewport()
+		return m.table.Update(nil)
 	}
 }

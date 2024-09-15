@@ -135,9 +135,9 @@ func TestSqliteTodoStore_Mock(t *testing.T) {
 		{
 			name: "Get all todo items",
 			mock: func() {
-				rows := sqlmock.NewRows([]string{"id", "name", "done", "createdat"}).
-					AddRow(1, "Task 1", 0, time.Now()).
-					AddRow(2, "Task 2", 0, time.Now())
+				rows := sqlmock.NewRows([]string{"id", "name", "description", "status", "createdat"}).
+					AddRow(1, "Task 1", "", 0, time.Now()).
+					AddRow(2, "Task 2", "", 0, time.Now())
 				mock.ExpectPrepare("SELECT \\* FROM todo").
 					ExpectQuery().
 					WillReturnRows(rows)
@@ -153,8 +153,8 @@ func TestSqliteTodoStore_Mock(t *testing.T) {
 		{
 			name: "Get todo by ID",
 			mock: func() {
-				rows := sqlmock.NewRows([]string{"id", "name", "done", "createdat"}).
-					AddRow(1, "Task 1", 0, time.Now())
+				rows := sqlmock.NewRows([]string{"id", "name", "description", "status", "createdat"}).
+					AddRow(1, "Task 1", "", 0, time.Now())
 				mock.ExpectPrepare("SELECT \\* FROM todo WHERE id=\\?").
 					ExpectQuery().
 					WithArgs(1).

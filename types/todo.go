@@ -28,10 +28,11 @@ func (s Status) String() string {
 }
 
 type Todo struct {
-	ID        int64
-	Name      string
-	Status    Status
-	CreatedAt time.Time
+	ID          int64
+	Name        string
+	Description *string
+	Status      Status
+	CreatedAt   time.Time
 }
 
 func (t Todo) String() string {

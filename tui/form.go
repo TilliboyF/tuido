@@ -76,29 +76,52 @@ func initForm(todo types.Todo, isNew bool, mainModel *Model) Form {
 	form := Form{todo: todo, mainModel: mainModel, isInit: true, isNew: isNew}
 	form.lg = lipgloss.DefaultRenderer()
 	form.styles = NewStyles(form.lg)
-	form.form = huh.NewForm(
-		huh.NewGroup(
-			huh.NewInput().
-				Key("name").
-				Title("Name").Value(&todo.Name),
 
-			huh.NewSelect[string]().
-				Key("status").
-				Title("Status").
-				Options(huh.NewOptions("todo", "in progress", "done")...),
-			huh.NewConfirm().
-				Key("done").
-				Title("All done?").
-				Validate(func(v bool) error {
-					if !v {
-						return fmt.Errorf("Welp, finish up then")
-					}
-					return nil
-				}).
-				Affirmative("Yep").
-				Negative("Wait, no"),
-		),
-	)
+	if isNew {
+		form.form = huh.NewForm(
+			huh.NewGroup(
+				huh.NewInput().
+					Key("name").
+					Title("Name").Value(&todo.Name),
+
+				huh.NewConfirm().
+					Key("done").
+					Title("All done?").
+					Validate(func(v bool) error {
+						if !v {
+							return fmt.Errorf("Welp, finish up then")
+						}
+						return nil
+					}).
+					Affirmative("Yep").
+					Negative("Wait, no"),
+			),
+		)
+	} else {
+		form.form = huh.NewForm(
+			huh.NewGroup(
+				huh.NewInput().
+					Key("name").
+					Title("Name").Value(&todo.Name),
+
+				huh.NewSelect[string]().
+					Key("status").
+					Title("Status").
+					Options(huh.NewOptions("todo", "in progress", "done")...),
+				huh.NewConfirm().
+					Key("done").
+					Title("All done?").
+					Validate(func(v bool) error {
+						if !v {
+							return fmt.Errorf("Welp, finish up then")
+						}
+						return nil
+					}).
+					Affirmative("Yep").
+					Negative("Wait, no"),
+			),
+		)
+	}
 
 	return form
 }
@@ -133,25 +156,27 @@ func (f Form) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	}
 	if f.form.State == huh.StateCompleted {
 
-		statusString := f.form.GetString("status")
 		var status types.Status
-		switch statusString {
-		case "todo":
+
+		if !f.isNew {
+			statusString := f.form.GetString("status")
+			switch statusString {
+			case "todo":
+				status = types.TODO
+			case "in progress":
+				status = types.INPROGRESS
+			case "done":
+				status = types.DONE
+			}
+		} else {
 			status = types.TODO
-		case "in progress":
-			status = types.INPROGRESS
-		case "done":
-			status = types.DONE
+			f.todo.ID = -1
 		}
 
 		name := f.form.GetString("name")
 		f.todo.Name = name
 
 		f.todo.Status = status
-
-		if f.isNew {
-			f.todo.ID = -1
-		}
 
 		return f.mainModel.Update(f.todo)
 	}
