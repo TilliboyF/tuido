@@ -80,3 +80,7 @@ func ArgsCheckFunc(amount int) func(*cobra.Command, []string) error {
 		return nil
 	}
 }
+
+func PointerTo[T ~string](s T) *T {
+	return &s
+}

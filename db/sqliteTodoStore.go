@@ -92,14 +92,15 @@ func NewSqliteTodoStore(useMock bool, useInMemory bool) (*SqliteTodoStore, sqlmo
 	return &data, mock, nil
 }
 
+/* Function to add a new todo to the database. It sets name and description.*/
 func (s *SqliteTodoStore) Add(t *types.Todo) error {
-	query := `INSERT INTO todo (name) VALUES (?);`
+	query := `INSERT INTO todo (name, description) VALUES (?,?);`
 	stmt, err := s.db.Prepare(query)
 	if err != nil {
 		return err
 	}
 	defer stmt.Close()
-	result, err := stmt.Exec(t.Name)
+	result, err := stmt.Exec(t.Name, t.Description)
 	if err != nil {
 		return err
 	}

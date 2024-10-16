@@ -24,7 +24,7 @@ func TestSqliteTodoStore_InMemory(t *testing.T) {
 		{
 			name: "Add todo item",
 			action: func() error {
-				todo := types.Todo{Name: "Task 1"}
+				todo := types.Todo{Name: "Task 1", Description: "Test"}
 				return store.Add(&todo)
 			},
 			validate: func(t *testing.T) {
@@ -32,6 +32,7 @@ func TestSqliteTodoStore_InMemory(t *testing.T) {
 				assert.NoError(t, err)
 				assert.Equal(t, 1, len(todos))
 				assert.Equal(t, "Task 1", todos[0].Name)
+				assert.Equal(t, "Test", todos[0].Description)
 			},
 		},
 		{
@@ -122,11 +123,11 @@ func TestSqliteTodoStore_Mock(t *testing.T) {
 			mock: func() {
 				mock.ExpectPrepare("INSERT INTO todo").
 					ExpectExec().
-					WithArgs("Task 1").
+					WithArgs("Task 1", "Test").
 					WillReturnResult(sqlmock.NewResult(1, 1))
 			},
 			validate: func(t *testing.T) {
-				todo := &types.Todo{Name: "Task 1"}
+				todo := &types.Todo{Name: "Task 1", Description: "Test"}
 				err := store.Add(todo)
 				assert.NoError(t, err)
 				assert.Equal(t, int64(1), todo.ID)

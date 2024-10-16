@@ -3,6 +3,7 @@ package tui
 import (
 	"fmt"
 
+	"github.com/TilliboyF/tuido/common"
 	"github.com/TilliboyF/tuido/types"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/huh"
@@ -73,63 +74,60 @@ func NewEmptyForm(mainModel *Model) Form {
 }
 
 func initForm(todo types.Todo, isNew bool, mainModel *Model) Form {
-	form := Form{todo: todo, mainModel: mainModel, isInit: true, isNew: isNew}
+	form := Form{
+		todo:      todo,
+		mainModel: mainModel,
+		isInit:    true,
+		isNew:     isNew,
+	}
 	form.lg = lipgloss.DefaultRenderer()
 	form.styles = NewStyles(form.lg)
+
+	var (
+		nameInput = huh.NewInput().
+				Key("name").
+				Title("Name").
+				Value(&todo.Name)
+
+		descInput = huh.NewText().
+				Key("description").
+				Title("Description").
+				Value(&todo.Description).Lines(3)
+
+		confirm = huh.NewConfirm().
+			Key("done").
+			Title("All done?").
+			Validate(func(v bool) error {
+				if !v {
+					return fmt.Errorf("Welp, finish up then")
+				}
+				return nil
+			}).
+			Affirmative("Yep").
+			Negative("Wait, no")
+
+		statusSelect = huh.NewSelect[string]().
+				Key("status").
+				Title("Status").
+				Options(huh.NewOptions("todo", "in progress", "done")...).
+				Value(common.PointerTo(todo.Status.String()))
+	)
 
 	if isNew {
 		form.form = huh.NewForm(
 			huh.NewGroup(
-				huh.NewInput().
-					Key("name").
-					Title("Name").
-					Value(&todo.Name),
-
-				huh.NewText().
-					Key("description").
-					Title("Description").
-					Value(&todo.Description),
-
-				huh.NewConfirm().
-					Key("done").
-					Title("All done?").
-					Validate(func(v bool) error {
-						if !v {
-							return fmt.Errorf("Welp, finish up then")
-						}
-						return nil
-					}).
-					Affirmative("Yep").
-					Negative("Wait, no"),
+				nameInput,
+				descInput,
+				confirm,
 			),
 		)
 	} else {
 		form.form = huh.NewForm(
 			huh.NewGroup(
-				huh.NewInput().
-					Key("name").
-					Title("Name").Value(&todo.Name),
-
-				huh.NewText().
-					Key("description").
-					Title("Description").
-					Value(&todo.Description),
-
-				huh.NewSelect[string]().
-					Key("status").
-					Title("Status").
-					Options(huh.NewOptions("todo", "in progress", "done")...),
-				huh.NewConfirm().
-					Key("done").
-					Title("All done?").
-					Validate(func(v bool) error {
-						if !v {
-							return fmt.Errorf("Welp, finish up then")
-						}
-						return nil
-					}).
-					Affirmative("Yep").
-					Negative("Wait, no"),
+				nameInput,
+				descInput,
+				statusSelect,
+				confirm,
 			),
 		)
 	}
@@ -152,9 +150,8 @@ func (f Form) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	}
 
 	if f.isInit {
-
 		f.isInit = false
-		return f, tea.Sequence(f.form.NextField(), f.form.PrevField())
+		return f, tea.Sequence(f.form.NextField(), f.form.PrevField()) // fixing a anoying bug
 	}
 
 	var cmds []tea.Cmd
@@ -194,7 +191,6 @@ func (f Form) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	}
 
 	return f, tea.Sequence(cmds...)
-
 }
 
 func (f Form) View() string {
