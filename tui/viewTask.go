@@ -12,7 +12,7 @@ import (
 type ViewTask struct {
 	todo      types.Todo
 	mainModel *Model
-	styles    *Styles
+	styles    *FormStyles
 }
 
 func NewViewTask(todo types.Todo, mainModel *Model) ViewTask {
@@ -20,7 +20,7 @@ func NewViewTask(todo types.Todo, mainModel *Model) ViewTask {
 	return ViewTask{
 		todo:      todo,
 		mainModel: mainModel,
-		styles:    NewStyles(lg),
+		styles:    NewDefaultFormStyles(lg),
 	}
 }
 
